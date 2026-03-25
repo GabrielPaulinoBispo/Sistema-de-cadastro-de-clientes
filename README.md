@@ -40,7 +40,7 @@ Sistema desenvolvido para gerenciar notas de alunos e gerar relatórios de desem
 
 ---
 
-## Regras de Negócio
+## Regras_de_Negócio
 
 - A média do aluno é calculada com base nas notas inseridas  
 - Critério de aprovação:
