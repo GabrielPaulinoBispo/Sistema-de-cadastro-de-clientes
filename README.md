@@ -40,7 +40,7 @@ Sistema desenvolvido para gerenciar notas de alunos e gerar relatórios de desem
 
 ---
 
-## calculo/critérios
+## Calculo/critérios
 
 - A média do aluno é calculada com base nas notas inseridas  
 - Critério de aprovação:
