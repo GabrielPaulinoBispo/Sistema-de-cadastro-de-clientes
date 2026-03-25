@@ -1,0 +1,160 @@
+import json
+import os
+
+ARQUIVO = "alunos.json"
+
+# ------------------------
+# BASE DE DADOS
+# ------------------------
+
+def carregar_dados():
+    if not os.path.exists(ARQUIVO):
+        return []
+    with open(ARQUIVO, "r") as f:
+        return json.load(f)
+
+def salvar_dados(dados):
+    with open(ARQUIVO, "w") as f:
+        json.dump(dados, f, indent=4)
+
+# ------------------------
+# REGRAS DE NEGÓCIO
+# ------------------------
+
+def calcular_media(notas):
+    return sum(notas) / len(notas)
+
+def classificar(media):
+    if media >= 6:
+        return "Aprovado"
+    else:
+        return "Reprovado"
+
+# ------------------------
+# CRUD
+# ------------------------
+
+def cadastrar():
+    dados = carregar_dados()
+
+    nome = input("Nome do aluno: ")
+    notas = []
+
+    for i in range(1, 5):
+        nota = float(input(f"Nota do {i}º bimestre: "))
+        notas.append(nota)
+
+    media = calcular_media(notas)
+    status = classificar(media)
+
+    aluno = {
+        "id": len(dados) + 1,
+        "nome": nome,
+        "notas": notas,
+        "media": media,
+        "status": status
+    }
+
+    dados.append(aluno)
+    salvar_dados(dados)
+
+    print("Aluno cadastrado com sucesso!")
+
+def listar():
+    dados = carregar_dados()
+    for aluno in dados:
+        print(aluno)
+
+def buscar():
+    dados = carregar_dados()
+    nome = input("Nome do aluno: ")
+
+    for aluno in dados:
+        if aluno["nome"].lower() == nome.lower():
+            print(aluno)
+
+def alterar():
+    dados = carregar_dados()
+    id_busca = int(input("ID do aluno: "))
+
+    for aluno in dados:
+        if aluno["id"] == id_busca:
+            print("Digite as novas notas:")
+            notas = []
+
+            for i in range(1, 5):
+                nota = float(input(f"Nota {i}: "))
+                notas.append(nota)
+
+            aluno["notas"] = notas
+            aluno["media"] = calcular_media(notas)
+            aluno["status"] = classificar(aluno["media"])
+
+    salvar_dados(dados)
+    print("Dados atualizados!")
+
+def excluir():
+    dados = carregar_dados()
+    id_busca = int(input("ID do aluno: "))
+
+    dados = [a for a in dados if a["id"] != id_busca]
+    salvar_dados(dados)
+
+    print("Aluno excluído!")
+
+# ------------------------
+# RELATÓRIOS
+# ------------------------
+
+def relatorio_aprovados():
+    dados = carregar_dados()
+    print("\n--- APROVADOS ---")
+    for aluno in dados:
+        if aluno["status"] == "Aprovado":
+            print(f'{aluno["nome"]} - Média: {aluno["media"]:.2f}')
+
+def relatorio_reprovados():
+    dados = carregar_dados()
+    print("\n--- REPROVADOS ---")
+    for aluno in dados:
+        if aluno["status"] == "Reprovado":
+            print(f'{aluno["nome"]} - Média: {aluno["media"]:.2f}')
+
+# ------------------------
+# MENU
+# ------------------------
+
+def menu():
+    while True:
+        print("\n===== SISTEMA DE ALUNOS =====")
+        print("1 - Cadastrar aluno")
+        print("2 - Listar alunos")
+        print("3 - Buscar aluno")
+        print("4 - Alterar aluno")
+        print("5 - Excluir aluno")
+        print("6 - Relatório de aprovados")
+        print("7 - Relatório de reprovados")
+        print("0 - Sair")
+
+        opcao = input("Escolha: ")
+
+        if opcao == "1":
+            cadastrar()
+        elif opcao == "2":
+            listar()
+        elif opcao == "3":
+            buscar()
+        elif opcao == "4":
+            alterar()
+        elif opcao == "5":
+            excluir()
+        elif opcao == "6":
+            relatorio_aprovados()
+        elif opcao == "7":
+            relatorio_reprovados()
+        elif opcao == "0":
+            break
+        else:
+            print("Opção inválida!")
+
+menu()
