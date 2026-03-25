@@ -1,0 +1,204 @@
+import json
+import os
+
+ARQUIVO = "clientes.json"
+
+
+def carregar_clientes():
+    if not os.path.exists(ARQUIVO):
+        return []
+    with open(ARQUIVO, "r") as f:
+        return json.load(f)
+
+def salvar_clientes(clientes):
+    with open(ARQUIVO, "w") as f:
+        json.dump(clientes, f, indent=4)
+
+
+def validar_cpf(cpf):
+    return len(cpf) == 11 and cpf.isdigit()
+
+def gerar_id(clientes):
+    if not clientes:
+        return 1
+    return max(c["id"] for c in clientes) + 1
+
+
+def cadastrar_cliente():
+    clientes = carregar_clientes()
+
+    nome = input("Nome completo: ")
+    cpf = input("CPF (somente números): ")
+
+    if not validar_cpf(cpf):
+        print("CPF inválido!")
+        return
+
+    data_nasc = input("Data de nascimento (dd/mm/aaaa): ")
+    telefone = input("Telefone: ")
+    email = input("Email: ")
+
+    cliente = {
+        "id": gerar_id(clientes),
+        "nome": nome,
+        "cpf": cpf,
+        "data_nascimento": data_nasc,
+        "telefone": telefone,
+        "email": email,
+        "saldo": 0.0
+    }
+
+    clientes.append(cliente)
+    salvar_clientes(clientes)
+
+    print("\nCliente cadastrado com sucesso!")
+
+
+def listar_clientes():
+    clientes = carregar_clientes()
+
+    print("\n--- LISTA DE CLIENTES ---")
+    for c in clientes:
+        print(f'ID: {c["id"]} | Nome: {c["nome"]} | CPF: {c["cpf"]} | Saldo: R$ {c["saldo"]:.2f}')
+
+
+
+def buscar_cliente():
+    clientes = carregar_clientes()
+    cpf = input("Digite o CPF: ")
+
+    for c in clientes:
+        if c["cpf"] == cpf:
+            print("\n--- DADOS DO CLIENTE ---")
+            print(f'ID: {c["id"]}')
+            print(f'Nome: {c["nome"]}')
+            print(f'CPF: {c["cpf"]}')
+            print(f'Data de Nascimento: {c["data_nascimento"]}')
+            print(f'Telefone: {c["telefone"]}')
+            print(f'Email: {c["email"]}')
+            print(f'Saldo: R$ {c["saldo"]:.2f}')
+            return
+
+    print("Cliente não encontrado!")
+
+
+def alterar_cliente():
+    clientes = carregar_clientes()
+    cpf = input("CPF do cliente: ")
+
+    for c in clientes:
+        if c["cpf"] == cpf:
+
+            print("\n--- DADOS ATUAIS ---")
+            print(f'Nome: {c["nome"]}')
+            print(f'Telefone: {c["telefone"]}')
+            print(f'Email: {c["email"]}')
+            print(f'Data de Nascimento: {c["data_nascimento"]}')
+
+            print("\nDigite o novo valor ou pressione ENTER para manter o atual:\n")
+
+            novo_nome = input("Nome: ")
+            if novo_nome:
+                c["nome"] = novo_nome
+
+            novo_tel = input("Telefone: ")
+            if novo_tel:
+                c["telefone"] = novo_tel
+
+            novo_email = input("Email: ")
+            if novo_email:
+                c["email"] = novo_email
+
+            nova_data = input("Data de Nascimento: ")
+            if nova_data:
+                c["data_nascimento"] = nova_data
+
+            salvar_clientes(clientes)
+
+            print("\nDados atualizados com sucesso!")
+            return
+
+    print("Cliente não encontrado!")
+
+
+def excluir_cliente():
+    clientes = carregar_clientes()
+    cpf = input("CPF do cliente: ")
+
+    clientes = [c for c in clientes if c["cpf"] != cpf]
+    salvar_clientes(clientes)
+
+    print("Cliente excluído!")
+
+
+def depositar():
+    clientes = carregar_clientes()
+    cpf = input("CPF do cliente: ")
+
+    for c in clientes:
+        if c["cpf"] == cpf:
+            valor = float(input("Valor do depósito: "))
+            c["saldo"] += valor
+
+            salvar_clientes(clientes)
+            print("Depósito realizado!")
+            return
+
+    print("Cliente não encontrado!")
+
+def sacar():
+    clientes = carregar_clientes()
+    cpf = input("CPF do cliente: ")
+
+    for c in clientes:
+        if c["cpf"] == cpf:
+            valor = float(input("Valor do saque: "))
+
+            if valor > c["saldo"]:
+                print("Saldo insuficiente!")
+                return
+
+            c["saldo"] -= valor
+            salvar_clientes(clientes)
+
+            print("Saque realizado!")
+            return
+
+    print("Cliente não encontrado!")
+
+
+def menu():
+    while True:
+        print("\n===== SISTEMA BANCÁRIO =====")
+        print("1 - Cadastrar cliente")
+        print("2 - Listar clientes")
+        print("3 - Buscar cliente")
+        print("4 - Alterar cliente")
+        print("5 - Excluir cliente")
+        print("6 - Depositar")
+        print("7 - Sacar")
+        print("0 - Sair")
+
+        opcao = input("Escolha: ")
+
+        if opcao == "1":
+            cadastrar_cliente()
+        elif opcao == "2":
+            listar_clientes()
+        elif opcao == "3":
+            buscar_cliente()
+        elif opcao == "4":
+            alterar_cliente()
+        elif opcao == "5":
+            excluir_cliente()
+        elif opcao == "6":
+            depositar()
+        elif opcao == "7":
+            sacar()
+        elif opcao == "0":
+            break
+        else:
+            print("Opção inválida!")
+
+menu()
+
