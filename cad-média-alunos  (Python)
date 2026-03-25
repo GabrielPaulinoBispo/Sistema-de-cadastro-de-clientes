@@ -113,12 +113,181 @@ def relatorio_aprovados():
         if aluno["status"] == "Aprovado":
             print(f'{aluno["nome"]} - Média: {aluno["media"]:.2f}')
 
+import json
+import os
+
+ARQUIVO = "alunos.json"
+
+# ------------------------
+# BANCO DE DADOS
+# ------------------------
+
+def carregar_dados():
+    if not os.path.exists(ARQUIVO):
+        return []
+    with open(ARQUIVO, "r") as f:
+        return json.load(f)
+
+def salvar_dados(dados):
+    with open(ARQUIVO, "w") as f:
+        json.dump(dados, f, indent=4)
+
+# ------------------------
+# REGRAS
+# ------------------------
+
+def calcular_media(notas):
+    return sum(notas) / 4
+
+def classificar(media):
+    return "Aprovado" if media >= 6 else "Reprovado"
+
+# ------------------------
+# FORMATAÇÃO
+# ------------------------
+
+def exibir_aluno(aluno):
+    print("\n" + "=" * 50)
+    print(f'ID: {aluno["id"]}')
+    print(f'Nome: {aluno["nome"]}')
+    print(f'Notas: {aluno["notas"]}')
+    print(f'Média: {aluno["media"]:.2f}')
+    print(f'Status: {aluno["status"]}')
+    print("=" * 50)
+
+def listar():
+    dados = carregar_dados()
+
+    print("\n===== LISTA DE ALUNOS =====")
+    print(f'{"ID":<5} {"Nome":<20} {"Média":<10} {"Status":<10}')
+    print("-" * 50)
+
+    for aluno in dados:
+        print(f'{aluno["id"]:<5} {aluno["nome"]:<20} {aluno["media"]:<10.2f} {aluno["status"]:<10}')
+
+# ------------------------
+# CRUD
+# ------------------------
+
+def cadastrar():
+    dados = carregar_dados()
+
+    nome = input("Nome do aluno: ")
+    notas = []
+
+    for i in range(1, 5):
+        nota = float(input(f"Nota do {i}º bimestre: "))
+        notas.append(nota)
+
+    media = calcular_media(notas)
+    status = classificar(media)
+
+    aluno = {
+        "id": len(dados) + 1,
+        "nome": nome,
+        "notas": notas,
+        "media": media,
+        "status": status
+    }
+
+    dados.append(aluno)
+    salvar_dados(dados)
+
+    print("\nAluno cadastrado com sucesso!")
+
+def buscar():
+    dados = carregar_dados()
+    nome = input("Nome do aluno: ")
+
+    for aluno in dados:
+        if aluno["nome"].lower() == nome.lower():
+            exibir_aluno(aluno)
+            return
+
+    print("Aluno não encontrado!")
+
+# ------------------------
+# ALTERAÇÃO PROFISSIONAL (NOVO MODELO)
+# ------------------------
+
+def alterar():
+    dados = carregar_dados()
+    id_busca = int(input("ID do aluno: "))
+
+    for aluno in dados:
+        if aluno["id"] == id_busca:
+
+            while True:
+                exibir_aluno(aluno)
+
+                print("\nO que deseja alterar?")
+                print("1 - Nome")
+                print("2 - Nota 1")
+                print("3 - Nota 2")
+                print("4 - Nota 3")
+                print("5 - Nota 4")
+                print("0 - Finalizar alteração")
+
+                opcao = input("Escolha: ")
+
+                if opcao == "1":
+                    aluno["nome"] = input("Novo nome: ")
+
+                elif opcao in ["2", "3", "4", "5"]:
+                    indice = int(opcao) - 2
+                    nova_nota = float(input("Nova nota: "))
+                    aluno["notas"][indice] = nova_nota
+
+                elif opcao == "0":
+                    break
+
+                else:
+                    print("Opção inválida!")
+
+                # Atualiza média e status automaticamente
+                aluno["media"] = calcular_media(aluno["notas"])
+                aluno["status"] = classificar(aluno["media"])
+
+            salvar_dados(dados)
+            print("\nDados atualizados com sucesso!")
+            return
+
+    print("Aluno não encontrado!")
+
+def excluir():
+    dados = carregar_dados()
+    id_busca = int(input("ID do aluno: "))
+
+    dados = [a for a in dados if a["id"] != id_busca]
+    salvar_dados(dados)
+
+    print("Aluno excluído!")
+
+# ------------------------
+# RELATÓRIOS
+# ------------------------
+
+def relatorio_aprovados():
+    dados = carregar_dados()
+
+    print("\n===== ALUNOS APROVADOS =====")
+    print(f'{"Nome":<20} {"Média":<10}')
+    print("-" * 30)
+
+    for aluno in dados:
+        if aluno["status"] == "Aprovado":
+            print(f'{aluno["nome"]:<20} {aluno["media"]:<10.2f}')
+
 def relatorio_reprovados():
     dados = carregar_dados()
-    print("\n--- REPROVADOS ---")
+
+    print("\n===== ALUNOS REPROVADOS =====")
+    print(f'{"Nome":<20} {"Média":<10}')
+    print("-" * 30)
+
     for aluno in dados:
         if aluno["status"] == "Reprovado":
-            print(f'{aluno["nome"]} - Média: {aluno["media"]:.2f}')
+            print(f'{aluno["nome"]:<20} {aluno["media"]:<10.2f}')
 
 # ------------------------
 # MENU
@@ -132,8 +301,8 @@ def menu():
         print("3 - Buscar aluno")
         print("4 - Alterar aluno")
         print("5 - Excluir aluno")
-        print("6 - Relatório de aprovados")
-        print("7 - Relatório de reprovados")
+        print("6 - Relatório aprovados")
+        print("7 - Relatório reprovados")
         print("0 - Sair")
 
         opcao = input("Escolha: ")
