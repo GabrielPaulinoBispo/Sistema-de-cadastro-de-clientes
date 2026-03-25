@@ -94,7 +94,7 @@ Em desenvolvimento
 
 ---
 
-## 👤 Autor
+## Autor
 
 Gabriel Paulino Bispo
 ```bash
